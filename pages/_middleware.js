@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 import { ERROR, RoutesString } from "../constants/commons";
 
 export async function middleware(req) {
-
     const token = await getToken({ req, secret: process.env.JWT_SECRET });
+    console.log("token",token); 
 
     const { pathname } = req.nextUrl;
     if (pathname.includes("/static")) {
@@ -18,10 +18,9 @@ export async function middleware(req) {
     if (pathname.includes("/api/auth") || token) {
         return NextResponse.next();
     }
-
-    // if (!token && pathname !== RoutesString.LOGIN) {
-    //     return NextResponse.redirect(RoutesString.LOGIN)
-    // };
+    if (!token && pathname !== RoutesString.LOGIN) {
+        return NextResponse.redirect(RoutesString.LOGIN)
+    };
     return NextResponse.next();
 
 }
