@@ -3,9 +3,13 @@ import { getProviders, signIn } from 'next-auth/react'
 import { RoutesString } from '../constants/commons';
 
 function login({ providers }) {
-    console.log(providers,"asdad")
     const handleLogin = () => {
-        signIn(providers.spotify.id, { callbackUrl: RoutesString.HOME });
+        try {
+            signIn(providers.spotify.id, { callbackUrl: RoutesString.HOME });
+            
+        } catch (error) {
+            console.log(error,"error")
+        }
     }
     return (
         <div className='bg-black flex items-center justify-center h-screen'>
