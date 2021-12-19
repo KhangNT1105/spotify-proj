@@ -9,7 +9,6 @@ function Songs() {
     const [playlist] = useRecoilState(playlistState);
     const [isPlaySong,setIsPlaySong]=useRecoilState(isPlaySongState);
     const [currentSong,setCurrentSong]=useRecoilState(currentSongState);
-    console.log("currentSong",currentSong);
     const handleClickSong=(song)=>()=>{
         setCurrentSong(song);
         setIsPlaySong(true);

@@ -34,9 +34,7 @@ export default function Home({song,isPlaying,volume,device}) {
         try {
           const response = await spotifyAPI.getUserPlaylists()
           setPlaylists(response.body.items);
-          console.log("response", response);
         } catch (error) {
-          console.log("errorIndex page", error);
         }
       })()
     }
@@ -48,7 +46,6 @@ export default function Home({song,isPlaying,volume,device}) {
         try {
           const response = await spotifyAPI.getPlaylist(playlistId);
           setPlaylist(response.body);
-          console.log("response", response);
 
         } catch (error) {
 
@@ -130,7 +127,6 @@ export async function getServerSideProps(context) {
     },
    
   })
-  console.log("songResponsesongResponse",songResponse.data)
   return {
     props: {
       session,

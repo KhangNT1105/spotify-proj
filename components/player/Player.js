@@ -61,7 +61,6 @@ function Player() {
     }, [volume])
     const throttleAdjustVolume = useCallback(
         throttle((v) => {
-            console.log("go heererer", v)
             spotifyAPI.setVolume(v);
         }, 100)
         , [])

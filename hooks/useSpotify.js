@@ -4,7 +4,6 @@ import { ERROR } from '../constants/commons';
 import { spotifyAPI } from '../constants/spotify'
 function useSpotify() {
     const { data } = useSession();
-    console.log("data",data)
     useEffect(() => {
         if (data) {
             if (data.error === ERROR.REFRESH_TOKEN) {
