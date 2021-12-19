@@ -12,7 +12,7 @@ import { spotifyAPI } from '../constants/spotify';
 import Player from '../components/player/Player';
 import { currentSongState, isPlaySongState } from '../atoms/songAtom';
 import { deviceState, volumeState } from '../atoms/deviceAtom';
-export default function Home({song,isPlaying,volume,device}) {
+export default function Home({session,song,isPlaying,volume,device}) {
   const { data } = useSession();
   const [playlists, setPlaylists] = useState([]);
   const spotifyAPI = useSpotify();
@@ -24,6 +24,7 @@ export default function Home({song,isPlaying,volume,device}) {
   const [,setVolume]=useRecoilState(volumeState);
   const [,setDevice]=useRecoilState(deviceState);
 
+ 
   const headerProps = {
     avatar: data?.user?.image,
     name: data?.user?.name
@@ -102,6 +103,7 @@ export default function Home({song,isPlaying,volume,device}) {
 
 export async function getServerSideProps(context) {
   const session = await getSession(context);
+  console.log("session",session);
   const response = await axios({
     method: "GET",
     url: "https://api.spotify.com/v1/me/player/devices",
@@ -130,7 +132,7 @@ export async function getServerSideProps(context) {
   return {
     props: {
       session,
-      song:songResponse?.data?.item,
+      song:songResponse?.data?.item||"",
       isPlaying:songResponse?.data?.is_playing,
       volume:songResponse?.data?.device?.volume_percent,
       device:response?.data?.devices?.[0]

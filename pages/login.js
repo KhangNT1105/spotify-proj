@@ -1,5 +1,5 @@
 import React from 'react'
-import { getProviders, signIn } from 'next-auth/react'
+import { getProviders, getSession, signIn } from 'next-auth/react'
 import { RoutesString } from '../constants/commons';
 
 function login({ providers }) {
@@ -26,11 +26,13 @@ function login({ providers }) {
 
 export default login
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context) {
     const providers = await getProviders();
+    const session = await getSession(context);
     return {
         props: {
             providers,
+            session
         }
     }
 }

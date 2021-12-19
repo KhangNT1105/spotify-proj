@@ -1,12 +1,12 @@
 import { getToken } from "next-auth/jwt"
+import { getCsrfToken, getSession } from "next-auth/react";
 import { NextResponse } from "next/server";
 import { ERROR, RoutesString } from "../constants/commons";
 
 export async function middleware(req) {
     const token = await getToken({ req, secret: process.env.JWT_SECRET });
-    console.log("token",token); 
-
     const { pathname } = req.nextUrl;
+    console.log("sessionnn", pathname, token);
     if (pathname.includes("/static")) {
         return NextResponse.next();
     }
@@ -18,7 +18,7 @@ export async function middleware(req) {
     if (pathname.includes("/api/auth") || token) {
         return NextResponse.next();
     }
-    if (!token && pathname !== RoutesString.LOGIN) {
+    if (!token && pathname === RoutesString.HOME) {
         return NextResponse.redirect(RoutesString.LOGIN)
     };
     return NextResponse.next();
