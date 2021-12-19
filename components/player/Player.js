@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { currentSongState, isPlaySongState } from '../../atoms/songAtom'
 import { PlayIcon, RewindIcon, FastForwardIcon, PauseIcon } from '@heroicons/react/solid'
-import { spotifyAPI } from '../../constants/spotify';
 import { VolumeOffIcon, VolumeUpIcon } from '@heroicons/react/outline';
 import { throttle } from 'lodash';
 import { deviceState, volumeState } from '../../atoms/deviceAtom';
+import useSpotify from '../../hooks/useSpotify';
 function Player() {
+    const spotifyAPI = useSpotify();
     const [currentSong, setCurrentSong] = useRecoilState(currentSongState);
     const [isPlaying, setIsPlaying] = useRecoilState(isPlaySongState);
     const [volume, setVolume] = useRecoilState(volumeState);

@@ -8,11 +8,11 @@ import Sidebar from '../components/sidebar/Sidebar'
 import useSpotify from '../hooks/useSpotify'
 import { playlistIdState, playlistState } from '../atoms/playlistAtom'
 import axios from 'axios';
-import { spotifyAPI } from '../constants/spotify';
 import Player from '../components/player/Player';
 import { currentSongState, isPlaySongState } from '../atoms/songAtom';
 import { deviceState, volumeState } from '../atoms/deviceAtom';
-export default function Home({session,song,isPlaying,volume,device}) {
+import { RoutesString } from '../constants/commons';
+export default function Home({ session, song, isPlaying, volume, device }) {
   const { data } = useSession();
   const [playlists, setPlaylists] = useState([]);
   const spotifyAPI = useSpotify();
@@ -20,11 +20,11 @@ export default function Home({session,song,isPlaying,volume,device}) {
   const [, setPlaylist] = useRecoilState(playlistState)
   const [, setIsPlaying] = useRecoilState(isPlaySongState)
 
-  const [,setCurrentSong]=useRecoilState(currentSongState);
-  const [,setVolume]=useRecoilState(volumeState);
-  const [,setDevice]=useRecoilState(deviceState);
+  const [, setCurrentSong] = useRecoilState(currentSongState);
+  const [, setVolume] = useRecoilState(volumeState);
+  const [, setDevice] = useRecoilState(deviceState);
 
- 
+
   const headerProps = {
     avatar: data?.user?.image,
     name: data?.user?.name
@@ -73,11 +73,11 @@ export default function Home({session,song,isPlaying,volume,device}) {
     }
   }, [device])
   useEffect(() => {
-      setIsPlaying(isPlaying);
+    setIsPlaying(isPlaying);
   }, [isPlaying])
   useEffect(() => {
     setVolume(volume);
-}, [volume])
+  }, [volume])
   const handleClickPlaylist = (id) => () => setPlaylistId(id)
   const sidebarProps = {
     playlists,
@@ -103,39 +103,46 @@ export default function Home({session,song,isPlaying,volume,device}) {
 
 export async function getServerSideProps(context) {
   const session = await getSession(context);
-  console.log("session",session);
-  const response = await axios({
-    method: "GET",
-    url: "https://api.spotify.com/v1/me/player/devices",
-    headers: {
-      "Authorization": `Bearer ${session?.user?.accessToken}`
-    }
-  })
-  await axios({
-    method: "PUT",
-    url: "https://api.spotify.com/v1/me/player",
-    headers: {
-      "Authorization": `Bearer ${session?.user?.accessToken}`
-    },
-    data: {
-      device_ids: response.data.devices.map((item) => item.id)
-    }
-  })
- const songResponse= await axios({
-    method: "GET",
-    url: "https://api.spotify.com/v1/me/player",
-    headers: {
-      "Authorization": `Bearer ${session?.user?.accessToken}`
-    },
-   
-  })
-  return {
-    props: {
-      session,
-      song:songResponse?.data?.item||"",
-      isPlaying:songResponse?.data?.is_playing,
-      volume:songResponse?.data?.device?.volume_percent,
-      device:response?.data?.devices?.[0]
+  console.log("session", session);
+  if (session) {
+    const response = await axios({
+      method: "GET",
+      url: "https://api.spotify.com/v1/me/player/devices",
+      headers: {
+        "Authorization": `Bearer ${session?.user?.accessToken}`
+      }
+    })
+    await axios({
+      method: "PUT",
+      url: "https://api.spotify.com/v1/me/player",
+      headers: {
+        "Authorization": `Bearer ${session?.user?.accessToken}`
+      },
+      data: {
+        device_ids: response.data.devices.map((item) => item.id)
+      }
+    })
+    const songResponse = await axios({
+      method: "GET",
+      url: "https://api.spotify.com/v1/me/player",
+      headers: {
+        "Authorization": `Bearer ${session?.user?.accessToken}`
+      },
+    })
+    return {
+      props: {
+        session,
+        song: songResponse?.data?.item || "",
+        isPlaying: songResponse?.data?.is_playing,
+        volume: songResponse?.data?.device?.volume_percent,
+        device: response?.data?.devices?.[0]
+      }
     }
   }
+  return {
+    redirect: {
+      destination: RoutesString.LOGIN,
+      permanent: false,
+    },
+  };
 }
