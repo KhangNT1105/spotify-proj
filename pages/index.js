@@ -1,82 +1,143 @@
+import { getSession, useSession } from 'next-auth/react'
 import Head from 'next/head'
+import { useEffect, useState } from 'react';
+import { useRecoilState } from 'recoil';
+import Content from '../components/content/Content';
+import Header from '../components/header/Header';
+import Sidebar from '../components/sidebar/Sidebar'
+import useSpotify from '../hooks/useSpotify'
+import { playlistIdState, playlistState } from '../atoms/playlistAtom'
+import axios from 'axios';
+import { spotifyAPI } from '../constants/spotify';
+import Player from '../components/player/Player';
+import { currentSongState, isPlaySongState } from '../atoms/songAtom';
+import { deviceState, volumeState } from '../atoms/deviceAtom';
+export default function Home({song,isPlaying,volume,device}) {
+  const { data } = useSession();
+  const [playlists, setPlaylists] = useState([]);
+  const spotifyAPI = useSpotify();
+  const [playlistId, setPlaylistId] = useRecoilState(playlistIdState)
+  const [, setPlaylist] = useRecoilState(playlistState)
+  const [, setIsPlaying] = useRecoilState(isPlaySongState)
 
-export default function Home() {
+  const [,setCurrentSong]=useRecoilState(currentSongState);
+  const [,setVolume]=useRecoilState(volumeState);
+  const [,setDevice]=useRecoilState(deviceState);
+
+  const headerProps = {
+    avatar: data?.user?.image,
+    name: data?.user?.name
+  }
+  useEffect(() => {
+    if (spotifyAPI.getAccessToken()) {
+      (async () => {
+        try {
+          const response = await spotifyAPI.getUserPlaylists()
+          setPlaylists(response.body.items);
+          console.log("response", response);
+        } catch (error) {
+          console.log("errorIndex page", error);
+        }
+      })()
+    }
+  }, [data, spotifyAPI])
+
+  useEffect(() => {
+    (async () => {
+      if (playlistId) {
+        try {
+          const response = await spotifyAPI.getPlaylist(playlistId);
+          setPlaylist(response.body);
+          console.log("response", response);
+
+        } catch (error) {
+
+        }
+      } else {
+
+      }
+    })()
+  }, [spotifyAPI, playlistId, data])
+  // useEffect(() => {
+  //   (async()=>{
+  //     const response = await spotifyAPI.getMyCurrentPlaybackState();
+  //     console.log("responseseseseseseseseses",response);
+  //   })()
+  // }, [spotifyAPI])
+  useEffect(() => {
+    if (song) {
+      setCurrentSong(song);
+    }
+  }, [song])
+  useEffect(() => {
+    if (device) {
+      setDevice(device);
+    }
+  }, [device])
+  useEffect(() => {
+      setIsPlaying(isPlaying);
+  }, [isPlaying])
+  useEffect(() => {
+    setVolume(volume);
+}, [volume])
+  const handleClickPlaylist = (id) => () => setPlaylistId(id)
+  const sidebarProps = {
+    playlists,
+    handleClickPlaylist
+  }
+  const contentProps = {
+  }
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="bg-black overflow-hidden h-screen scrollbar-hide">
       <Head>
-        <title>Create Next App</title>
+        <title>Khang's Spotify</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
-
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-            pages/index.js
-          </code>
-        </p>
-
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
+      <main className='flex '>
+        <Sidebar {...sidebarProps} />
+        <Header {...headerProps} />
+        <Content {...contentProps} />
       </main>
-
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <a
-          className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" />
-        </a>
-      </footer>
+      <Player />
     </div>
   )
+}
+
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+  const response = await axios({
+    method: "GET",
+    url: "https://api.spotify.com/v1/me/player/devices",
+    headers: {
+      "Authorization": `Bearer ${session?.user?.accessToken}`
+    }
+  })
+  await axios({
+    method: "PUT",
+    url: "https://api.spotify.com/v1/me/player",
+    headers: {
+      "Authorization": `Bearer ${session?.user?.accessToken}`
+    },
+    data: {
+      device_ids: response.data.devices.map((item) => item.id)
+    }
+  })
+ const songResponse= await axios({
+    method: "GET",
+    url: "https://api.spotify.com/v1/me/player",
+    headers: {
+      "Authorization": `Bearer ${session?.user?.accessToken}`
+    },
+   
+  })
+  console.log("songResponsesongResponse",songResponse.data)
+  return {
+    props: {
+      session,
+      song:songResponse?.data?.item,
+      isPlaying:songResponse?.data?.is_playing,
+      volume:songResponse?.data?.device?.volume_percent,
+      device:response?.data?.devices?.[0]
+    }
+  }
 }
